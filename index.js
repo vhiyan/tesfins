@@ -1,5 +1,6 @@
 const fins = require('omron-fins');
-const Netcat = require('node-netcat')
+// const Netcat = require('node-netcat')
+const net = require('net');
 
 const options = {timeout: 5000, SA1: 0, DA1: 10, protocol: "tcp"}; //protocol can be "udp" or "tcp" only
 const IP = `172.19.88.88`;
@@ -11,39 +12,51 @@ let sensorValue=[];
 // Connecting / disconnecting...
 const optionsnc = {
  // define a connection timeout
-	timeout: 60000,
+	timeout: 1000,
  // buffer(default, to receive the original Buffer objects), ascii, hex,utf8, base64
   read_encoding: 'buffer'
  }
  
- const nc = new Netcat.client(3000, '127.0.0.1', [optionsnc])
-
+ const HOSTIP = '127.0.0.1';
+const HOSTPORT = 3000;
+ const nc = new net.Socket();
  const data ={
-    id:27,
-    proxy:1
- }
- function connectNC() {
-     nc.start();
-     nc.on('error',function err(err) {
-         console.log("🚀 ~ file: index.js:29 ~ err ~ err:", err)
-        return 'error'
-    })
-    nc.send(JSON.stringify(data));
-    nc.on('close', function close(_data){
-        console.log("🚀 ~ file: index.js:33 ~ close ~ _data:", _data)
-        return 'done'
-    })
+     id:27,
+     proxy:1
+    }
+    
+    function createCon(){
 
- }
+     nc.on('error',function(err){
+         console.log("🚀 ~ file: index.js:34 ~ nc.on ~ err:", err.code)
+         if(err.code==='ECONNREFUSED')
+         {
+            setInterval(() => {
+                    nc.connect(HOSTPORT,HOSTIP);
+            }, 5000);
+                
 
+         }
+     })
 
+     nc.on('connect',function(){
+            setInterval(() => {
+                nc.write(`${JSON.stringify(data)}`)
+                console.log("🚀 ~ file: index.js:32 ~ connect:",JSON.stringify(data))
+                // nc.destroy()
+            }, 4000);
+     })
  
- setInterval(() => {
-     const conn = connectNC()
-    if(conn==='error')connectNC();
-    // else if(!done)sendData(JSON.stringify(data));
- }, 1000);
- 
+     nc.on('close', function(){
+         console.log("🚀 ~ file: index.js:40 ~ nc.on ~ close")
+         nc.destroy();
+     })
+
+     nc.connect(HOSTPORT,HOSTIP)
+
+    }
+
+    createCon();
 
 //  process.on('uncaughtException', function (err) {
 //      console.log("🚀 ~ file: index.js:28 ~ err.code:", err.code)
