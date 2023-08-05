@@ -1,13 +1,11 @@
 const fins = require('omron-fins');
 // const Netcat = require('node-netcat')
 const net = require('net');
-const { connect } = require('http2');
 
 const options = {timeout: 5000, SA1: 0, DA1: 10, protocol: "tcp"}; //protocol can be "udp" or "tcp" only
 const IP = `172.19.88.88`;
 const PORT = 9600;
 const client = fins.FinsClient(PORT, IP, options);
-let done = false;
 let ncconnect = false;
 let sensorValue=[];
 // Connecting / disconnecting...
@@ -51,7 +49,7 @@ const HOSTPORT = 3000;
          console.log("🚀 ~ file: index.js:40 ~ nc.on ~ close")
          
          if(ncconnect){
-            
+
              throw new Error('disconnecng')
          }
      })
