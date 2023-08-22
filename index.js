@@ -3,6 +3,8 @@ const fins = require('omron-fins');
 const net = require('net');
 const date = require("date-and-time");
 
+const config = require(__basedir + "/config/app.config");
+
 const options = {timeout: 5000, SA1: 0, DA1: 10, protocol: "tcp"}; //protocol can be "udp" or "tcp" only
 const IP = `172.19.88.88`;
 const PORT = 9600;
