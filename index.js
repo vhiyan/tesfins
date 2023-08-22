@@ -3,14 +3,16 @@ const fins = require('omron-fins');
 const net = require('net');
 const date = require("date-and-time");
 
-const config = require(__basedir + "/config/app.config");
+const config = require("./config/app.config");
 
 const options = {timeout: 5000, SA1: 0, DA1: 10, protocol: "tcp"}; //protocol can be "udp" or "tcp" only
-const IP = `172.19.88.88`;
+const IP = config.plc.ip;
 const PORT = 9600;
 const client = fins.FinsClient(PORT, IP, options);
 let readyToSend= Array(9).fill(true);
 let timerSendLast= Array(9).fill(0);
+
+const machineId = config.machineId;
 
 let ncconnect = false;
 let sensorValue=[];
@@ -24,37 +26,23 @@ const optionsnc = {
  // buffer(default, to receive the original Buffer objects), ascii, hex,utf8, base64
   read_encoding: 'buffer'
  }
- const HOSTIP = '127.0.0.1';
-const HOSTPORT = 3000;
+ const HOSTIP = config.dcs.ip;
+const HOSTPORT =  config.dcs.port;
  
- const data = [
-    {id:27,proxy:1},
-    {id:27,proxy:1},
-    {id:27,proxy:1},
-    {id:27,proxy:1},
-    {id:27,proxy:1},
-    {id:27,proxy:1},
-    {id:27,proxy:1},
-    {id:27,proxy:1}
-];
 
 
 const intervaltimerSend = {
-    interval : 5000,
+    interval : config.intervalBouncing,
 };
     
 (async () => {
 	console.log('connect to dcs');
     	if(initialCondition == true){
-		console.log(readyToSend[2]);
+		console.log(config.plc.ip);
             // readyToSend[1]=true;
 		initialCondition = false;
 	}
         })()
-
-
-
-     
 
 
     function sendData(__index) { 
@@ -63,15 +51,15 @@ const intervaltimerSend = {
 		readyToSend[__index]=false;
         const nc = new net.Socket();
             	nc.connect(HOSTPORT,HOSTIP,function(){
-                	console.log("🚀 ~ file: index.js:52 ~ sendData ~ __index:", __index);
-						const data_send =`${JSON.stringify(data[__index])}`; 
+                	console.log("🚀 ~ file: index.js:52 ~ sendData ~ __index:", config.msg[__index]);
+                        config.msg[__index].id = config.machineId;
+						const data_send =`${JSON.stringify(config.msg[__index])}`; 
                 	    const id = setTimeout(() => {     
                             nc.write(data_send);
                             clearTimeout(id);
                             nc.destroy();
                         }, 1000);
                 	console.log("🚀 ~ file: index.js:32 ~ connect:",data_send);
-                    
                     timerSendLast[__index] = new Date();
 	   
      		})
@@ -79,12 +67,14 @@ const intervaltimerSend = {
      nc.on('error',function(err){
             // console.log(err.code);
             console.log("🚀 ~ file: index.js:52 ~ nc.on ~ err:", err)
+            throw new Error(err.code);
      })
  
      nc.on('close', function(){
          console.log("🚀 ~ file: index.js:40 ~ nc.on ~ close")
      }) 
 	    }
+
     }
 
 
@@ -113,7 +103,7 @@ setInterval(() => {
         }
         // console.log("🚀 ~ file: index.js:32 ~ client.read ~ sensorValue:", sensorValue)
     });    
-}, 200);
+}, config.plc.intervalRead);
 
 
 
