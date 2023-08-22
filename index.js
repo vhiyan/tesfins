@@ -86,14 +86,6 @@ const intervaltimerSend = {
     }
 
 
-//  process.on('uncaughtException', function (err) {
-//      console.log("🚀 ~ file: index.js:28 ~ err.code:", err.code)
-//     if(err.code == 'ECONNREFUSED'){
-//     nc.start();
-//     console.log("🚀 ~ file: index.js:28 ~ 'ECONREFUSED':", 'ECONREFUSED')
-//     }
-//   });
-
 
 // client init connection
 
@@ -110,7 +102,7 @@ setInterval(() => {
         sensorValue = msg.response.values;
         for (const index in sensorValue) {  
             // console.log(`${sensorValue[index]} is at position ${index}`)
-            if(sensorValue[index]==0){
+            if(sensorValue[index]==1){
                 sendData(index);
             }else{
                 readyToSend[index] = true
