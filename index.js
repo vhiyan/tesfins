@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const fins = require('omron-fins');
 // const Netcat = require('node-netcat')
 const net = require('net');
@@ -9,8 +11,8 @@ const options = {timeout: 5000, SA1: 0, DA1: 10, protocol: "tcp"}; //protocol ca
 const IP = config.plc.ip;
 const PORT = 9600;
 const client = fins.FinsClient(PORT, IP, options);
-let readyToSend= Array(9).fill(true);
-let timerSendLast= Array(9).fill(0);
+let readyToSend= Array(8).fill(true);
+let timerSendLast= Array(8).fill(0);
 
 const machineId = config.machineId;
 
@@ -28,7 +30,7 @@ const optionsnc = {
  }
  const HOSTIP = config.dcs.ip;
 const HOSTPORT =  config.dcs.port;
- 
+let msg={response:{values: new Array(8)}} 
 
 
 const intervaltimerSend = {
@@ -42,7 +44,7 @@ const intervaltimerSend = {
             // readyToSend[1]=true;
 		initialCondition = false;
 	}
-        })()
+        })();
 
 
     function sendData(__index) { 
@@ -86,12 +88,16 @@ client.connect();
 
 // client.connect()?console.log('not connect'):console.log('connect');
 
+client.on('error',function(error, msg) {
+  console.log("Error: ", error, msg);
+});
 
 setInterval(() => {
     client.read(`D10000`,10,function(err, msg) {
         if(err) throw new Error('plc not connected')
         // console.log("🚀 ~ file: index.js:29 ~ client..readMultiple ~ msg:", msg)
-        sensorValue = msg.response.values;
+     
+	    sensorValue = msg.response.values ;
         for (const index in sensorValue) {  
             // console.log(`${sensorValue[index]} is at position ${index}`)
             if(sensorValue[index]==1){
@@ -101,7 +107,8 @@ setInterval(() => {
             }
             
         }
-        // console.log("🚀 ~ file: index.js:32 ~ client.read ~ sensorValue:", sensorValue)
+        
+	    // console.log("🚀 ~ file: index.js:32 ~ client.read ~ sensorValue:", sensorValue)
     });    
 }, config.plc.intervalRead);
 
