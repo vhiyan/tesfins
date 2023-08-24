@@ -3,11 +3,12 @@ Description=Read plc using fins
 After=network.target
 
 [Service]
+ExecStartPre=/bin/sleep 10
 ExecStart=/usr/local/bin/node /opt/tesfins/index.js
-Restart=5s
+Restart=always
+RestartSec=5
 Type=simple
 WorkingDirectory=/opt/tesfins
 
 [Install]
 WantedBy=multi-user.target
-
